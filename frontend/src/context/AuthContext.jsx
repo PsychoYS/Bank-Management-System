@@ -3,9 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 // Set axios default base URL
-axios.defaults.baseURL = 'http://localhost:5000';
-
-const API_URL = process.env.REACT_APP_API_URL || 'https://your-backend-url.vercel.app/api';
+axios.defaults.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const AuthContext = createContext();
 
