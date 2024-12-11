@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { commonStyles, animations } from '../styles/commonStyles';
-import axios from 'axios';
+import axiosInstance from '../utils/axios';
 import {
     Container,
     Box,
@@ -40,9 +40,9 @@ const AdminPage = () => {
             };
 
             const [disputesRes, closureRes, feedbackRes] = await Promise.all([
-                axios.get('/api/disputes/all', config),
-                axios.get('/api/closure/all', config),
-                axios.get('/api/feedback/all', config)
+                axiosInstance.get('/api/disputes/all', config),
+                axiosInstance.get('/api/closure/all', config),
+                axiosInstance.get('/api/feedback/all', config)
             ]);
 
             setDisputes(disputesRes.data);
@@ -55,31 +55,51 @@ const AdminPage = () => {
 
     const handleDisputeStatus = async (disputeId, newStatus) => {
         try {
-            await axios.patch(`/api/disputes/${disputeId}/status`, 
+            const response = await axiosInstance.patch(
+                `/api/disputes/${disputeId}/status`,
                 { status: newStatus },
                 { headers: { Authorization: `Bearer ${authToken}` } }
             );
-            fetchData();
+            
+            if (response.data) {
+                await fetchData();
+            }
         } catch (err) {
-            console.error('Error updating dispute:', err);
+            console.error('Error updating dispute:', err.response?.data || err.message);
         }
     };
 
     const handleClosureRequest = async (username, isApproved) => {
         try {
-            await axios.post('/api/closure/process', 
+            console.log('Processing closure request:', { username, isApproved });
+            const response = await axiosInstance.post(
+                '/api/closure/process',
                 { username, isApproved },
                 { headers: { Authorization: `Bearer ${authToken}` } }
             );
-            fetchData();
+            
+            if (response.data) {
+                console.log('Closure request processed successfully:', response.data);
+                // Update the local state immediately
+                setClosureRequests(prevRequests => 
+                    prevRequests.map(req => 
+                        req.userId?.username === username 
+                            ? { ...req, status: isApproved ? 'approved' : 'rejected' }
+                            : req
+                    )
+                );
+                // Then fetch fresh data
+                await fetchData();
+            }
         } catch (err) {
-            console.error('Error processing closure request:', err);
+            console.error('Error processing closure request:', err.response?.data || err.message);
         }
     };
 
     const handleFeedbackStatus = async (feedbackId, newStatus) => {
         try {
-            await axios.patch(`/api/feedback/${feedbackId}`,
+            await axiosInstance.patch(
+                `/api/feedback/${feedbackId}`,
                 { status: newStatus },
                 { headers: { Authorization: `Bearer ${authToken}` } }
             );
@@ -92,8 +112,6 @@ const AdminPage = () => {
     const getStatusChip = (status) => {
         const colors = {
             pending: 'warning',
-            reviewed: 'info',
-            resolved: 'success',
             'In Progress': 'info',
             Resolved: 'success'
         };
@@ -218,7 +236,7 @@ const AdminPage = () => {
                         <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', my: 3 }} />
                         <Grid container spacing={3}>
                             {disputes.map((dispute, index) => (
-                                <Grid item xs={12} md={6} key={index} sx={{
+                                <Grid item xs={12} md={6} key={dispute._id || index} sx={{
                                     animation: `slideIn 0.5s ease-out ${index * 0.1}s`
                                 }}>
                                     <Card sx={muiStyles.card}>
@@ -232,25 +250,35 @@ const AdminPage = () => {
                                             <Typography sx={{ color: '#fff', opacity: 0.8, mb: 2 }}>
                                                 {dispute.description}
                                             </Typography>
+                                            <Typography variant="caption" sx={{ color: '#fff', opacity: 0.6 }}>
+                                                Created: {new Date(dispute.createdAt).toLocaleDateString()}
+                                            </Typography>
                                         </CardContent>
-                                        <CardActions>
-                                            <Button 
-                                                variant="outlined" 
-                                                onClick={() => handleDisputeStatus(dispute._id, 'In Progress')}
-                                                disabled={dispute.status === 'In Progress'}
-                                                sx={muiStyles.button}
-                                            >
-                                                Mark In Progress
-                                            </Button>
-                                            <Button 
-                                                variant="contained" 
-                                                color="success"
-                                                onClick={() => handleDisputeStatus(dispute._id, 'Resolved')}
-                                                disabled={dispute.status === 'Resolved'}
-                                                sx={muiStyles.button}
-                                            >
-                                                Resolve
-                                            </Button>
+                                        <CardActions sx={{ justifyContent: 'flex-end', gap: 1, p: 2 }}>
+                                            {dispute.status !== 'Resolved' && (
+                                                <>
+                                                    {dispute.status === 'pending' && (
+                                                        <Button 
+                                                            variant="outlined" 
+                                                            color="info"
+                                                            onClick={() => handleDisputeStatus(dispute._id, 'In Progress')}
+                                                            sx={muiStyles.button}
+                                                        >
+                                                            Mark In Progress
+                                                        </Button>
+                                                    )}
+                                                    {dispute.status === 'In Progress' && (
+                                                        <Button 
+                                                            variant="contained" 
+                                                            color="success"
+                                                            onClick={() => handleDisputeStatus(dispute._id, 'Resolved')}
+                                                            sx={muiStyles.button}
+                                                        >
+                                                            Resolve
+                                                        </Button>
+                                                    )}
+                                                </>
+                                            )}
                                         </CardActions>
                                     </Card>
                                 </Grid>
@@ -271,35 +299,50 @@ const AdminPage = () => {
                         <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', my: 3 }} />
                         <Grid container spacing={3}>
                             {closureRequests.map((request, index) => (
-                                <Grid item xs={12} md={6} key={index} sx={{
+                                <Grid item xs={12} md={6} key={request._id || index} sx={{
                                     animation: `slideIn 0.5s ease-out ${index * 0.1}s`
                                 }}>
                                     <Card sx={muiStyles.card}>
                                         <CardContent>
-                                            <Typography variant="h6" sx={{ color: '#fff' }}>
+                                            <Typography variant="h6" sx={{ color: '#fff', mb: 2 }}>
                                                 User: {request.userId?.username || 'Unknown'}
                                             </Typography>
-                                            <Typography sx={{ color: '#fff', opacity: 0.8, my: 2 }}>
+                                            <Typography sx={{ color: '#fff', opacity: 0.8, mb: 2 }}>
                                                 Reason: {request.reason}
                                             </Typography>
+                                            <Typography variant="caption" sx={{ color: '#fff', opacity: 0.6 }}>
+                                                Requested: {new Date(request.createdAt).toLocaleDateString()}
+                                            </Typography>
                                         </CardContent>
-                                        <CardActions>
-                                            <Button 
-                                                variant="outlined" 
-                                                color="error"
-                                                onClick={() => handleClosureRequest(request.userId?.username, false)}
-                                                sx={muiStyles.button}
-                                            >
-                                                Reject
-                                            </Button>
-                                            <Button 
-                                                variant="contained" 
-                                                color="success"
-                                                onClick={() => handleClosureRequest(request.userId?.username, true)}
-                                                sx={muiStyles.button}
-                                            >
-                                                Approve
-                                            </Button>
+                                        <CardActions sx={{ justifyContent: 'flex-end', gap: 1, p: 2 }}>
+                                            {request.status === 'pending' && (
+                                                <>
+                                                    <Button 
+                                                        variant="outlined" 
+                                                        color="error"
+                                                        onClick={() => handleClosureRequest(request.userId?.username, false)}
+                                                        sx={muiStyles.button}
+                                                    >
+                                                        Reject
+                                                    </Button>
+                                                    <Button 
+                                                        variant="contained" 
+                                                        color="success"
+                                                        onClick={() => handleClosureRequest(request.userId?.username, true)}
+                                                        sx={muiStyles.button}
+                                                    >
+                                                        Approve
+                                                    </Button>
+                                                </>
+                                            )}
+                                            {request.status !== 'pending' && (
+                                                <Chip 
+                                                    label={request.status} 
+                                                    color={request.status === 'approved' ? 'success' : 'error'}
+                                                    size="small"
+                                                    sx={{ borderRadius: '20px' }}
+                                                />
+                                            )}
                                         </CardActions>
                                     </Card>
                                 </Grid>

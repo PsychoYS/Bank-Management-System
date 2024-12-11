@@ -2,28 +2,29 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { commonStyles, animations } from '../styles/commonStyles';
-import axios from 'axios';
+import axiosInstance from '../utils/axios';
 
 const AccountClosureRequest = () => {
     const navigate = useNavigate();
     const { authToken } = useAuth();
     const [reason, setReason] = useState('');
     const [error, setError] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [success, setSuccess] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setIsSubmitting(true);
         try {
-            await axios.post('/api/closure/request', 
+            await axiosInstance.post('/api/closure/request', 
                 { reason },
                 { headers: { Authorization: `Bearer ${authToken}` } }
             );
-            navigate('/dashboard');
+            setSuccess(true);
+            setError('');
+            setTimeout(() => navigate('/dashboard'), 2000);
         } catch (err) {
-            setError(err.response?.data?.message || 'Error submitting request');
-        } finally {
-            setIsSubmitting(false);
+            console.error('Error submitting closure request:', err);
+            setError(err.response?.data?.message || 'Failed to submit request');
+            setSuccess(false);
         }
     };
 
@@ -106,14 +107,14 @@ const AccountClosureRequest = () => {
                             </button>
                             <button
                                 type="submit"
-                                disabled={isSubmitting}
+                                disabled={success}
                                 style={{
                                     ...commonStyles.button,
-                                    opacity: isSubmitting ? 0.7 : 1,
-                                    cursor: isSubmitting ? 'not-allowed' : 'pointer'
+                                    opacity: success ? 0.7 : 1,
+                                    cursor: success ? 'not-allowed' : 'pointer'
                                 }}
                             >
-                                {isSubmitting ? 'Submitting...' : 'Submit Request'}
+                                {success ? 'Submitting...' : 'Submit Request'}
                             </button>
                         </div>
                     </form>

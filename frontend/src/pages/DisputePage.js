@@ -189,9 +189,17 @@ const DisputePage = () => {
                                             padding: '0.25rem 0.75rem',
                                             borderRadius: '1rem',
                                             fontSize: '0.9rem',
-                                            backgroundColor: dispute.status === 'Resolved' ? 'rgba(76, 175, 80, 0.1)' : 'rgba(255, 193, 7, 0.1)',
-                                            color: dispute.status === 'Resolved' ? '#4caf50' : '#ffc107',
-                                            border: `1px solid ${dispute.status === 'Resolved' ? '#4caf50' : '#ffc107'}`
+                                            backgroundColor: dispute.status === 'Resolved' ? 'rgba(76, 175, 80, 0.1)' : 
+                                                            dispute.status === 'In Progress' ? 'rgba(33, 150, 243, 0.1)' :
+                                                            'rgba(255, 193, 7, 0.1)',
+                                            color: dispute.status === 'Resolved' ? '#4caf50' : 
+                                                   dispute.status === 'In Progress' ? '#2196f3' :
+                                                   '#ffc107',
+                                            border: `1px solid ${
+                                                dispute.status === 'Resolved' ? '#4caf50' : 
+                                                dispute.status === 'In Progress' ? '#2196f3' :
+                                                '#ffc107'
+                                            }`
                                         }}>
                                             {dispute.status}
                                         </span>

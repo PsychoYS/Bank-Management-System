@@ -10,10 +10,17 @@ const app = express();
 
 // Middleware
 app.use(cors({
-    origin: ['http://localhost:3001', 'https://bank-management-system-frontend.vercel.app'],
+    origin: ['http://localhost:3000', 'http://localhost:3001'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
 }));
+
+// Add OPTIONS handling for preflight requests
+app.options('*', cors());
+
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Import routes
 const userRoutes = require('./routes/userRoutes');
@@ -43,10 +50,40 @@ app.use('/api/scheduled-transfer', scheduledTransferRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/balance', balanceRoutes);
 
+// Root route
+app.get('/', (req, res) => {
+    res.json({ 
+        message: 'Bank Management System API is running',
+        status: 'active',
+        endpoints: {
+            auth: '/api/users',
+            account: '/api/account',
+            balance: '/api/balance',
+            transfer: '/api/transfer',
+            bills: '/api/bills',
+            disputes: '/api/disputes',
+            feedback: '/api/feedback'
+        }
+    });
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.json({ status: 'OK', timestamp: new Date() });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ success: false, message: 'Something went wrong!' });
+});
+
+// Add this after all your routes but before the error handler
+app.use('*', (req, res) => {
+    res.status(404).json({
+        success: false,
+        message: 'API endpoint not found'
+    });
 });
 
 module.exports = app;

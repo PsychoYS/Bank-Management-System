@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { commonStyles, animations } from '../styles/commonStyles';
-import axios from 'axios';
-
-// Set axios default base URL
-axios.defaults.baseURL = 'http://localhost:5000';
+import axiosInstance from '../utils/axios';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -19,18 +16,16 @@ const Login = () => {
             const endpoint = isAdmin ? '/api/users/admin-login' : '/api/users/login';
             const payload = isAdmin ? { adminPassword: password } : { email, password };
             
-            const response = await axios.post(endpoint, payload, {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
+            console.log('Attempting login to:', endpoint);
+            
+            const response = await axiosInstance.post(endpoint, payload);
             
             if (response.data.token) {
                 const { token, user } = response.data;
                 login(token, user);
             }
         } catch (err) {
-            console.error('Login error:', err);
+            console.error('Login error:', err.response || err);
             setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
         }
     };

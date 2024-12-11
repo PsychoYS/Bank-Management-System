@@ -1,19 +1,22 @@
 const mongoose = require('mongoose');
 
-const disputeSchema = new mongoose.Schema({
+const accountClosureSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
     },
-    description: {
+    reason: {
         type: String,
         required: true
     },
     status: {
         type: String,
-        enum: ['pending', 'In Progress', 'Resolved'],
+        enum: ['pending', 'approved', 'rejected'],
         default: 'pending'
+    },
+    processedAt: {
+        type: Date
     },
     createdAt: {
         type: Date,
@@ -21,4 +24,4 @@ const disputeSchema = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model('Dispute', disputeSchema); 
+module.exports = mongoose.model('AccountClosure', accountClosureSchema); 

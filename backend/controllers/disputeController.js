@@ -1,51 +1,59 @@
-const disputeService = require('../services/disputeService');
+const Dispute = require('../models/Dispute');
 
-const createDispute = async (req, res) => {
+// Get all disputes (admin only)
+exports.getAllDisputes = async (req, res) => {
     try {
-        const { description } = req.body;
-        const dispute = await disputeService.createDispute(req.user._id, description);
+        const disputes = await Dispute.find().populate('userId', 'username email');
+        res.json(disputes);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Update dispute status (admin only)
+exports.updateDisputeStatus = async (req, res) => {
+    try {
+        const { disputeId } = req.params;
+        const { status } = req.body;
+
+        const dispute = await Dispute.findByIdAndUpdate(
+            disputeId,
+            { status },
+            { new: true }
+        ).populate('userId', 'username email');
+
+        if (!dispute) {
+            return res.status(404).json({ message: 'Dispute not found' });
+        }
+
+        res.json(dispute);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Create new dispute
+exports.createDispute = async (req, res) => {
+    try {
+        const dispute = new Dispute({
+            userId: req.user._id,
+            description: req.body.description,
+            status: 'pending'
+        });
+
+        await dispute.save();
         res.status(201).json(dispute);
     } catch (error) {
-        res.status(500).json({ message: error.message || 'Error creating dispute' });
+        res.status(400).json({ message: error.message });
     }
 };
 
-const getDisputes = async (req, res) => {
+// Get user disputes
+exports.getUserDisputes = async (req, res) => {
     try {
-        const disputes = await disputeService.getDisputes(req.user._id);
-        res.status(200).json(disputes);
+        const disputes = await Dispute.find({ userId: req.user._id });
+        res.json(disputes);
     } catch (error) {
-        res.status(500).json({ message: error.message || 'Error fetching disputes' });
+        res.status(500).json({ message: error.message });
     }
-};
-
-const getAllDisputes = async (req, res) => {
-    try {
-        const disputes = await disputeService.getAllDisputes(req.user);
-        res.status(200).json(disputes);
-    } catch (error) {
-        const status = error.message === 'Not authorized' ? 403 : 500;
-        res.status(status).json({ message: error.message || 'Error fetching all disputes' });
-    }
-};
-
-const updateDisputeStatus = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { status } = req.body;
-        const dispute = await disputeService.updateDisputeStatus(req.user, id, status);
-        res.status(200).json(dispute);
-    } catch (error) {
-        const status = 
-            error.message === 'Not authorized' ? 403 :
-            error.message === 'Dispute not found' ? 404 : 500;
-        res.status(status).json({ message: error.message || 'Error updating dispute status' });
-    }
-};
-
-module.exports = {
-    createDispute,
-    getDisputes,
-    getAllDisputes,
-    updateDisputeStatus
 }; 

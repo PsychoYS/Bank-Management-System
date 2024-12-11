@@ -1,17 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
-const { 
-    requestAccountClosure,
-    getAllClosureRequests,
-    processClosureRequest 
-} = require('../controllers/accountController');
+const { adminOnly } = require('../middleware/adminMiddleware');
 
-// Regular user route
-router.post('/request', protect, requestAccountClosure);
+// Import the closure controller
+const closureController = require('../controllers/closureController');
+
+// User routes
+router.post('/request', protect, closureController.requestClosure);
+router.get('/status', protect, closureController.getClosureStatus);
 
 // Admin routes
-router.get('/all', protect, getAllClosureRequests);
-router.post('/process', protect, processClosureRequest);
+router.get('/all', protect, adminOnly, closureController.getAllRequests);
+router.post('/process', protect, adminOnly, closureController.processRequest);
 
 module.exports = router;
