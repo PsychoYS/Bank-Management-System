@@ -13,7 +13,7 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const endpoint = isAdmin ? '/api/users/admin-login' : '/api/users/login';
+            const endpoint = isAdmin ? 'http://localhost:5000/api/users/admin-login' : '/api/users/login';
             const payload = isAdmin ? { adminPassword: password } : { email, password };
             
             console.log('Attempting login to:', endpoint);
@@ -48,7 +48,29 @@ const Login = () => {
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 animation: 'fadeIn 0.5s ease-out'
             }}>
-                <h1 style={commonStyles.title}>Login</h1>
+                <div style={{
+                    textAlign: 'center',
+                    marginBottom: '2rem'
+                }}>
+                    <h1 style={{
+                        ...commonStyles.title,
+                        fontSize: '2.5rem',
+                        fontWeight: 'bold',
+                        color: '#fff',
+                        textTransform: 'uppercase',
+                        letterSpacing: '2px',
+                        marginBottom: '1rem',
+                        textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+                    }}>Welcome!</h1>
+                    <p style={{
+                        ...commonStyles.text,
+                        fontSize: '1.2rem',
+                        color: '#e0e0e0',
+                        opacity: 0.9
+                    }}>
+                        To your trusted banking partner
+                    </p>
+                </div>
                 
                 <div style={commonStyles.flexCenter}>
                     <label style={{

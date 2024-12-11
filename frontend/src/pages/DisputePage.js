@@ -22,7 +22,7 @@ const DisputePage = () => {
 
     const fetchDisputes = async () => {
         try {
-            const response = await axios.get('/api/disputes', {
+            const response = await axios.get('http://localhost:5000/api/disputes', {
                 headers: {
                     Authorization: `Bearer ${authToken}`
                 }
@@ -37,7 +37,7 @@ const DisputePage = () => {
     const handleSubmitDispute = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('/api/disputes', 
+            await axios.post('http://localhost:5000/api/disputes', 
                 { description: newDispute },
                 {
                     headers: {

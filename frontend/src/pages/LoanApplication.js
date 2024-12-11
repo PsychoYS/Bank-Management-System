@@ -28,7 +28,7 @@ const LoanApplication = () => {
                 return;
             }
             
-            const response = await axios.get('/api/loan/details', {
+            const response = await axios.get('http://localhost:5000/api/loan/details', {
                 headers: {
                     'Authorization': `Bearer ${authToken}`,
                     'Content-Type': 'application/json'
@@ -50,7 +50,7 @@ const LoanApplication = () => {
         e.preventDefault();
         try {
             const response = await axios.post(
-                `/api/loan/apply-loan`,
+                'http://localhost:5000/api/loan/apply-loan',
                 {
                     loanAmount: Number(loanAmount),
                     interestRate: Number(interestRate),

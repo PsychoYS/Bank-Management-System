@@ -14,7 +14,7 @@ const AccountClosureRequest = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axiosInstance.post('/api/closure/request', 
+            await axiosInstance.post('http://localhost:5000/api/closure/request', 
                 { reason },
                 { headers: { Authorization: `Bearer ${authToken}` } }
             );

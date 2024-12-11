@@ -40,9 +40,9 @@ const AdminPage = () => {
             };
 
             const [disputesRes, closureRes, feedbackRes] = await Promise.all([
-                axiosInstance.get('/api/disputes/all', config),
-                axiosInstance.get('/api/closure/all', config),
-                axiosInstance.get('/api/feedback/all', config)
+                axiosInstance.get('http://localhost:5000/api/disputes/all', config),
+                axiosInstance.get('http://localhost:5000/api/closure/all', config),
+                axiosInstance.get('http://localhost:5000/api/feedback/all', config)
             ]);
 
             setDisputes(disputesRes.data);
@@ -56,7 +56,7 @@ const AdminPage = () => {
     const handleDisputeStatus = async (disputeId, newStatus) => {
         try {
             const response = await axiosInstance.patch(
-                `/api/disputes/${disputeId}/status`,
+                `http://localhost:5000/api/disputes/${disputeId}/status`,
                 { status: newStatus },
                 { headers: { Authorization: `Bearer ${authToken}` } }
             );
@@ -73,7 +73,7 @@ const AdminPage = () => {
         try {
             console.log('Processing closure request:', { username, isApproved });
             const response = await axiosInstance.post(
-                '/api/closure/process',
+                'http://localhost:5000/api/closure/process',
                 { username, isApproved },
                 { headers: { Authorization: `Bearer ${authToken}` } }
             );
@@ -99,7 +99,7 @@ const AdminPage = () => {
     const handleFeedbackStatus = async (feedbackId, newStatus) => {
         try {
             await axiosInstance.patch(
-                `/api/feedback/${feedbackId}`,
+                `http://localhost:5000/api/feedback/${feedbackId}`,
                 { status: newStatus },
                 { headers: { Authorization: `Bearer ${authToken}` } }
             );

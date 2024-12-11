@@ -26,7 +26,7 @@ const ScheduledTransfers = () => {
 
     const fetchTransfers = async () => {
         try {
-            const response = await axios.get('/api/scheduled-transfer/list', {
+            const response = await axios.get('http://localhost:5000/api/scheduled-transfer/list', {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`
                 }
@@ -43,7 +43,7 @@ const ScheduledTransfers = () => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            const response = await axios.post('/api/scheduled-transfer/create', {
+            const response = await axios.post('http://localhost:5000/api/scheduled-transfer/create', {
                 ...newTransfer,
                 fromAccount: user.username
             }, {
@@ -72,7 +72,7 @@ const ScheduledTransfers = () => {
 
     const handleUpdateTransfer = async (transferId, updates) => {
         try {
-            await axios.put(`/api/scheduled-transfer/update/${transferId}`, updates, {
+            await axios.put(`http://localhost:5000/api/scheduled-transfer/update/${transferId}`, updates, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`
                 }
@@ -89,7 +89,7 @@ const ScheduledTransfers = () => {
 
     const fetchHistory = async (transferId) => {
         try {
-            const response = await axios.get(`/api/scheduled-transfer/history/${transferId}`, {
+            const response = await axios.get(`http://localhost:5000/api/scheduled-transfer/history/${transferId}`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`
                 }
@@ -176,7 +176,7 @@ const ScheduledTransfers = () => {
                                 type="text"
                                 placeholder="Enter recipient's account number"
                                 value={newTransfer.recipientAccount}
-                                onChange={(e) => setNewTransfer({...newTransfer, recipientAccount: e.target.value})}
+                                onChange={(e) => setNewTransfer({ ...newTransfer, recipientAccount: e.target.value })}
                                 style={commonStyles.input}
                                 required
                             />
@@ -194,7 +194,7 @@ const ScheduledTransfers = () => {
                                 type="number"
                                 placeholder="Enter amount"
                                 value={newTransfer.amount}
-                                onChange={(e) => setNewTransfer({...newTransfer, amount: e.target.value})}
+                                onChange={(e) => setNewTransfer({ ...newTransfer, amount: e.target.value })}
                                 style={commonStyles.input}
                                 required
                                 min="0"
@@ -212,7 +212,7 @@ const ScheduledTransfers = () => {
                             </label>
                             <select
                                 value={newTransfer.frequency}
-                                onChange={(e) => setNewTransfer({...newTransfer, frequency: e.target.value})}
+                                onChange={(e) => setNewTransfer({ ...newTransfer, frequency: e.target.value })}
                                 style={commonStyles.input}
                             >
                                 <option value="weekly">Weekly</option>
@@ -232,7 +232,7 @@ const ScheduledTransfers = () => {
                             <input
                                 type="date"
                                 value={newTransfer.startDate}
-                                onChange={(e) => setNewTransfer({...newTransfer, startDate: e.target.value})}
+                                onChange={(e) => setNewTransfer({ ...newTransfer, startDate: e.target.value })}
                                 style={commonStyles.input}
                                 required
                             />
@@ -250,14 +250,14 @@ const ScheduledTransfers = () => {
                                 type="text"
                                 placeholder="Enter transfer description"
                                 value={newTransfer.description}
-                                onChange={(e) => setNewTransfer({...newTransfer, description: e.target.value})}
+                                onChange={(e) => setNewTransfer({ ...newTransfer, description: e.target.value })}
                                 style={commonStyles.input}
                                 required
                             />
                         </div>
 
-                        <button 
-                            type="submit" 
+                        <button
+                            type="submit"
                             style={{
                                 ...commonStyles.button,
                                 opacity: isSubmitting ? 0.7 : 1,
@@ -287,8 +287,8 @@ const ScheduledTransfers = () => {
                         gap: '1rem'
                     }}>
                         {transfers.map((transfer, index) => (
-                            <div 
-                                key={transfer.transferId} 
+                            <div
+                                key={transfer.transferId}
                                 style={{
                                     ...commonStyles.card,
                                     animation: `slideIn 0.5s ease-out ${index * 0.1}s`
@@ -343,8 +343,8 @@ const ScheduledTransfers = () => {
                                     justifyContent: 'flex-end'
                                 }}>
                                     <button
-                                        onClick={() => handleUpdateTransfer(transfer.transferId, { 
-                                            status: transfer.status === 'active' ? 'paused' : 'active' 
+                                        onClick={() => handleUpdateTransfer(transfer.transferId, {
+                                            status: transfer.status === 'active' ? 'paused' : 'active'
                                         })}
                                         style={{
                                             ...commonStyles.button,
@@ -384,8 +384,8 @@ const ScheduledTransfers = () => {
                             gap: '1rem'
                         }}>
                             {history.map((record, index) => (
-                                <div 
-                                    key={index} 
+                                <div
+                                    key={index}
                                     style={{
                                         ...commonStyles.card,
                                         animation: `slideIn 0.5s ease-out ${index * 0.1}s`
@@ -425,8 +425,8 @@ const ScheduledTransfers = () => {
                     </div>
                 )}
 
-                <Link 
-                    to="/transactions" 
+                <Link
+                    to="/transactions"
                     style={{
                         ...commonStyles.button,
                         display: 'inline-block',

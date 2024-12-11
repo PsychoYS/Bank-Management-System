@@ -12,59 +12,76 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-    const [authToken, setAuthToken] = useState(localStorage.getItem('token'));
-    const [user, setUser] = useState(JSON.parse(localStorage.getItem('userData')));
+    const [authToken, setAuthToken] = useState(null);
+    const [user, setUser] = useState(null);
     const [accountDetails, setAccountDetails] = useState(null);
     const [error, setError] = useState(null);
-    const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const navigate = useNavigate();
 
-    // Check session expiration
+    // Force login page on mount
     useEffect(() => {
-        const checkSession = () => {
-            const token = localStorage.getItem('token');
-            const tokenTimestamp = localStorage.getItem('tokenTimestamp');
-            
-            if (token && tokenTimestamp) {
-                const currentTime = new Date().getTime();
-                const tokenTime = parseInt(tokenTimestamp);
-                const fiveMinutes = 5 * 60 * 1000;
-
-                if (currentTime - tokenTime > fiveMinutes) {
-                    logout();
-                }
-            }
-        };
-
-        // Check session every minute
-        const interval = setInterval(checkSession, 60 * 1000);
+        // Clear all auth data
+        localStorage.clear();
+        sessionStorage.clear();
+        setAuthToken(null);
+        setUser(null);
+        setIsAuthenticated(false);
         
-        // Cleanup interval on unmount
-        return () => clearInterval(interval);
+        // Force redirect to login
+        navigate('/login');
     }, []);
 
-    // Update timestamp on any user activity
+    // Add axios interceptor to handle server errors
     useEffect(() => {
-        const updateTimestamp = () => {
-            if (isAuthenticated) {
-                localStorage.setItem('tokenTimestamp', new Date().getTime().toString());
+        const interceptor = axios.interceptors.response.use(
+            response => response,
+            error => {
+                if (error.code === 'ERR_NETWORK' || error.response?.status === 401) {
+                    logout();
+                }
+                return Promise.reject(error);
             }
-        };
+        );
 
-        // Add event listeners for user activity
-        window.addEventListener('mousemove', updateTimestamp);
-        window.addEventListener('keypress', updateTimestamp);
-        window.addEventListener('click', updateTimestamp);
-        window.addEventListener('scroll', updateTimestamp);
+        return () => axios.interceptors.response.eject(interceptor);
+    }, []);
 
-        // Cleanup event listeners on unmount
-        return () => {
-            window.removeEventListener('mousemove', updateTimestamp);
-            window.removeEventListener('keypress', updateTimestamp);
-            window.removeEventListener('click', updateTimestamp);
-            window.removeEventListener('scroll', updateTimestamp);
-        };
-    }, [isAuthenticated]);
+    const login = async (token, userData) => {
+        try {
+            // Test connection to server
+            await axios.get('/api/auth/verify', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            // If successful, set auth data
+            localStorage.setItem('token', token);
+            localStorage.setItem('userData', JSON.stringify(userData));
+            setAuthToken(token);
+            setUser(userData);
+            setIsAuthenticated(true);
+            
+            // Navigate based on user role
+            if (userData.isAdmin) {
+                navigate('/admin');
+            } else {
+                navigate('/dashboard');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            logout();
+        }
+    };
+
+    const logout = () => {
+        localStorage.clear();
+        sessionStorage.clear();
+        setAuthToken(null);
+        setUser(null);
+        setAccountDetails(null);
+        setIsAuthenticated(false);
+        navigate('/login');
+    };
 
     const fetchAccountOverview = async () => {
         try {
@@ -77,7 +94,6 @@ export const AuthProvider = ({ children }) => {
 
             const response = await axios.get(`/api/account/overview`, config);
             setAccountDetails(response.data);
-            localStorage.setItem('userEmail', response.data.email);
             setError(null);
         } catch (err) {
             if (err.response?.status === 401) {
@@ -87,34 +103,6 @@ export const AuthProvider = ({ children }) => {
                 setError('Error fetching account overview');
             }
         }
-    };
-
-    const login = (token, userData) => {
-        localStorage.setItem('token', token);
-        localStorage.setItem('tokenTimestamp', new Date().getTime().toString());
-        localStorage.setItem('userData', JSON.stringify(userData));
-        setAuthToken(token);
-        setUser(userData);
-        setIsAuthenticated(true);
-        
-        // Navigate based on user role
-        if (userData.isAdmin) {
-            navigate('/admin');
-        } else {
-            navigate('/dashboard');
-        }
-    };
-
-    const logout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('tokenTimestamp');
-        localStorage.removeItem('userData');
-        localStorage.removeItem('userEmail');
-        setAuthToken(null);
-        setUser(null);
-        setAccountDetails(null);
-        setIsAuthenticated(false);
-        navigate('/login');
     };
 
     return (

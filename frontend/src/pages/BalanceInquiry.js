@@ -15,7 +15,7 @@ const BalanceInquiry = () => {
             const storedRefreshToken = localStorage.getItem('refreshToken');
             if (!storedRefreshToken) throw new Error('No refresh token available');
 
-            const response = await axios.post('/api/auth/refresh', { refreshToken: storedRefreshToken });
+            const response = await axios.post('http://localhost:5000/api/auth/refresh', { refreshToken: storedRefreshToken });
             const { accessToken } = response.data;
 
             localStorage.setItem('token', accessToken);
@@ -37,7 +37,7 @@ const BalanceInquiry = () => {
                 throw new Error('User not authenticated');
             }
 
-            const response = await axios.get('/api/balance/balance', {
+            const response = await axios.get('http://localhost:5000/api/balance/balance', {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -52,7 +52,7 @@ const BalanceInquiry = () => {
                 const newToken = await refreshToken();
                 if (newToken) {
                     try {
-                        const response = await axios.get('/api/balance/balance', {
+                        const response = await axios.get('http://localhost:5000/api/balance/balance', {
                             headers: {
                                 Authorization: `Bearer ${newToken}`,
                             },
@@ -83,7 +83,7 @@ const BalanceInquiry = () => {
                 throw new Error('User not authenticated');
             }
 
-            const response = await axios.get('/api/balance/insights', {
+            const response = await axios.get('http://localhost:5000/api/balance/insights', {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },

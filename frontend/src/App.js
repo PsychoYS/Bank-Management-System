@@ -3,7 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import NewNavbar from './UI/navbar/NewNavbar';
-import ChatbotWidget from './components/ChatbotWidget';
+import ChatSupport from './components/Chat/ChatSupport';
+// import ChatbotWidget from './components/ChatbotWidget';
 
 // Import your pages
 import Login from './pages/Login';
@@ -28,12 +29,12 @@ import Transaction from './pages/Transaction';
 const AuthenticatedRoute = ({ children, requireAdmin }) => {
     const { isAuthenticated, user } = useAuth();
     const location = useLocation();
-    
+
     // Check if we're trying to access a public route while authenticated
     if (isAuthenticated && (location.pathname === '/login' || location.pathname === '/register')) {
         return <Navigate to={user?.isAdmin ? '/admin' : '/dashboard'} />;
     }
-    
+
     // Check if we're trying to access a private route while not authenticated
     if (!isAuthenticated && location.pathname !== '/login' && location.pathname !== '/register') {
         return <Navigate to="/login" />;
@@ -49,12 +50,12 @@ const AuthenticatedRoute = ({ children, requireAdmin }) => {
 
 const AppRoutes = () => {
     const { isAuthenticated } = useAuth();
-    
+
     return (
         <>
             <Routes>
                 <Route path="/" element={<Navigate to="/login" />} />
-                
+
                 {/* Public Routes */}
                 <Route path="/login" element={
                     <AuthenticatedRoute>
@@ -120,11 +121,7 @@ const AppRoutes = () => {
                         <LoanApplication />
                     </AuthenticatedRoute>
                 } />
-                <Route path="/chat-support" element={
-                    <AuthenticatedRoute>
-                        <ChatSupportPage />
-                    </AuthenticatedRoute>
-                } />
+                <Route path="/chat-support" element={<AuthenticatedRoute><ChatSupportPage /></AuthenticatedRoute>} />
                 <Route path="/request-closure" element={
                     <AuthenticatedRoute>
                         <AccountClosureRequest />
@@ -172,7 +169,8 @@ const AppRoutes = () => {
                     </AuthenticatedRoute>
                 } />
             </Routes>
-            {isAuthenticated && <ChatbotWidget />}
+            {isAuthenticated && <ChatSupport />}
+            {/* {isAuthenticated && <ChatbotWidget />} */}
         </>
     );
 };

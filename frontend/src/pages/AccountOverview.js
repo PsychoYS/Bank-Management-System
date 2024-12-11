@@ -17,7 +17,7 @@ const AccountOverview = () => {
 
         const fetchAccountDetails = async () => {
             try {
-                const response = await axios.get('/api/account/overview', {
+                const response = await axios.get('http://localhost:5000/api/account/overview', {
                     headers: {
                         Authorization: `Bearer ${authToken}`
                     }

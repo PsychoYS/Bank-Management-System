@@ -20,7 +20,7 @@ const BillPaymentPage = () => {
                 return;
             }
 
-            const response = await axios.get(`/api/bills/pending`, {
+            const response = await axios.get(`http://localhost:5000/api/bills/pending`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'

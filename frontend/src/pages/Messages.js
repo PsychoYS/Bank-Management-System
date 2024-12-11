@@ -14,7 +14,7 @@ const Messages = () => {
 
     const fetchMessages = async () => {
         try {
-            const response = await axios.get(`/api/messages/list`, {
+            const response = await axios.get(`http://localhost:5000/api/messages/list`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`
                 }
@@ -29,7 +29,7 @@ const Messages = () => {
 
     const handleMarkAsRead = async (messageId) => {
         try {
-            await axios.put(`/api/messages/read/${messageId}`, {}, {
+            await axios.put(`http://localhost:5000/api/messages/read/${messageId}`, {}, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`
                 }

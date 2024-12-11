@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { commonStyles, animations } from '../styles/commonStyles';
+import axiosInstance from '../utils/axios';
 
 const Register = () => {
     const [username, setUsername] = useState('');
@@ -13,15 +14,19 @@ const Register = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('/api/users/register', {
+            const response = await axiosInstance.post('/api/users/register', {
                 username,
                 email,
                 password,
             });
-            alert(response.data.message);
-            navigate('/login');
+            
+            if (response.data.message) {
+                alert(response.data.message);
+                navigate('/login');
+            }
         } catch (err) {
-            setError(err.response?.data?.message || 'Error during registration');
+            console.error('Registration error:', err.response || err);
+            setError(err.response?.data?.message || 'Error during registration. Please try again.');
         }
     };
 
@@ -43,7 +48,26 @@ const Register = () => {
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 animation: 'fadeIn 0.5s ease-out'
             }}>
-                <h1 style={commonStyles.title}>Register</h1>
+                <div style={{
+                    textAlign: 'center',
+                    marginBottom: '2rem'
+                }}>
+                    <h1 style={{
+                        ...commonStyles.title,
+                        fontSize: '2.5rem',
+                        fontWeight: 'bold',
+                        color: '#fff',
+                        marginBottom: '1rem'
+                    }}>Welcome!</h1>
+                    <p style={{
+                        ...commonStyles.text,
+                        fontSize: '1.2rem',
+                        color: '#e0e0e0',
+                        opacity: 0.9
+                    }}>
+                        Create your account today
+                    </p>
+                </div>
                 
                 {error && (
                     <div style={{
